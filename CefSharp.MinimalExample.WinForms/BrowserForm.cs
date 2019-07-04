@@ -32,6 +32,7 @@ namespace CefSharp.MinimalExample.WinForms
             browser.StatusMessage += OnBrowserStatusMessage;
             browser.TitleChanged += OnBrowserTitleChanged;
             browser.AddressChanged += OnBrowserAddressChanged;
+            browser.RequestContext = new RequestContext();
 
             var bitness = Environment.Is64BitProcess ? "x64" : "x86";
             var version = String.Format("Chromium: {0}, CEF: {1}, CefSharp: {2}, Environment: {3}", Cef.ChromiumVersion, Cef.CefVersion, Cef.CefSharpVersion, bitness);
@@ -45,6 +46,10 @@ namespace CefSharp.MinimalExample.WinForms
                 var b = ((ChromiumWebBrowser)sender);
 
                 this.InvokeOnUiThreadIfRequired(() => b.Focus());
+                this.InvokeOnUiThreadIfRequired(() =>
+                {
+                    browser.RequestContext.RegisterSchemeHandlerFactory("http", "www.mail-viewer.com", new SchemeHandlerFactory());
+                });
             }
         }
 
@@ -63,7 +68,7 @@ namespace CefSharp.MinimalExample.WinForms
             SetCanGoBack(args.CanGoBack);
             SetCanGoForward(args.CanGoForward);
 
-            this.InvokeOnUiThreadIfRequired(() => SetIsLoading(!args.CanReload));
+            this.InvokeOnUiThreadIfRequired(() => LoadUrl("http://www.mail-viewer.com/"));
         }
 
         private void OnBrowserTitleChanged(object sender, TitleChangedEventArgs args)
